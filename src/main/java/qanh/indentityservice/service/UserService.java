@@ -3,6 +3,8 @@ package qanh.indentityservice.service;
 import org.springframework.stereotype.Service;
 import qanh.indentityservice.dto.request.UserCreationRequest;
 import qanh.indentityservice.entity.User;
+import qanh.indentityservice.exception.AppException;
+import qanh.indentityservice.exception.ErrorCode;
 import qanh.indentityservice.repository.UserRepository;
 
 @Service
@@ -15,6 +17,11 @@ public class UserService {
 
     public User createUser(UserCreationRequest user) {
         User userEntity = new User();
+
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTS);
+        }
+
         userEntity.setUsername(user.getUsername());
         userEntity.setPassword(user.getPassword());
         userEntity.setFirstName(user.getFirstName());
@@ -29,7 +36,8 @@ public class UserService {
     }
 
     public User getUserById(String id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay user"));
     }
 
     public User updateUser(String id, UserCreationRequest user) {

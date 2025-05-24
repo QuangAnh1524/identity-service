@@ -1,6 +1,8 @@
 package qanh.indentityservice.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import qanh.indentityservice.dto.request.ApiResponse;
 import qanh.indentityservice.dto.request.UserCreationRequest;
 import qanh.indentityservice.entity.User;
 import qanh.indentityservice.service.UserService;
@@ -15,8 +17,10 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public User createUser(@RequestBody UserCreationRequest user) {
-         return userService.createUser(user);
+    public ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest user) {
+        ApiResponse<User> response = new ApiResponse<>();
+        response.setResult(userService.createUser(user));
+        return response;
     }
 
     @GetMapping("/users")
