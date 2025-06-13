@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import qanh.indentityservice.dto.request.ApiResponse;
 import qanh.indentityservice.dto.request.UserCreationRequest;
+import qanh.indentityservice.dto.request.UserUpdateRequest;
 import qanh.indentityservice.entity.User;
 import qanh.indentityservice.service.UserService;
 
@@ -34,7 +35,7 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public User updateUser(@PathVariable String id, @RequestBody UserCreationRequest user) {
+    public User updateUser(@PathVariable String id, @RequestBody UserUpdateRequest user) {
         return userService.updateUser(id, user);
     }
 

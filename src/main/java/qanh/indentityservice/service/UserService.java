@@ -2,6 +2,7 @@ package qanh.indentityservice.service;
 
 import org.springframework.stereotype.Service;
 import qanh.indentityservice.dto.request.UserCreationRequest;
+import qanh.indentityservice.dto.request.UserUpdateRequest;
 import qanh.indentityservice.entity.User;
 import qanh.indentityservice.exception.AppException;
 import qanh.indentityservice.exception.ErrorCode;
@@ -40,17 +41,25 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Khong tim thay user"));
     }
 
-    public User updateUser(String id, UserCreationRequest user) {
-        User userEntity = userRepository.findById(id).orElse(null);
-        if (userEntity != null) {
-            userEntity.setFirstName(user.getFirstName());
-            userEntity.setLastName(user.getLastName());
-            userEntity.setDob(user.getDob());
-            return userRepository.save(userEntity);
-        } else {
-            userEntity = createUser(user);
-            return userRepository.save(userEntity);
+    public User updateUser(String id, UserUpdateRequest userUpdateRequest) {
+        User userEntity = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        // Chỉ update các field không null
+        if (userUpdateRequest.getPassword() != null) {
+            userEntity.setPassword(userUpdateRequest.getPassword());
         }
+        if (userUpdateRequest.getFirstName() != null) {
+            userEntity.setFirstName(userUpdateRequest.getFirstName());
+        }
+        if (userUpdateRequest.getLastName() != null) {
+            userEntity.setLastName(userUpdateRequest.getLastName());
+        }
+        if (userUpdateRequest.getDob() != null) {
+            userEntity.setDob(userUpdateRequest.getDob());
+        }
+
+        return userRepository.save(userEntity);
     }
 
     public void deleteUser(String id) {
