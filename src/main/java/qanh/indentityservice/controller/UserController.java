@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import qanh.indentityservice.dto.request.ApiResponse;
 import qanh.indentityservice.dto.request.UserCreationRequest;
 import qanh.indentityservice.dto.request.UserUpdateRequest;
+import qanh.indentityservice.dto.response.UserResponse;
 import qanh.indentityservice.entity.User;
 import qanh.indentityservice.service.UserService;
 
@@ -30,12 +31,12 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public User getUserById(@PathVariable String id) {
+    public UserResponse getUserById(@PathVariable String id) {
         return userService.getUserById(id);
     }
 
     @PutMapping("/users/{id}")
-    public User updateUser(@PathVariable String id, @RequestBody UserUpdateRequest user) {
+    public UserResponse updateUser(@PathVariable String id, @RequestBody UserUpdateRequest user) {
         return userService.updateUser(id, user);
     }
 
