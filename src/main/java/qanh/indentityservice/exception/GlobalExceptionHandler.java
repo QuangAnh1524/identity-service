@@ -5,12 +5,20 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import qanh.indentityservice.dto.request.ApiResponse;
+import qanh.indentityservice.dto.response.IntrospectResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(value = RuntimeException.class)
+    ResponseEntity<IntrospectResponse> handleRuntimeException(RuntimeException e) {
+        IntrospectResponse response = new IntrospectResponse();
+        response.setValid(false);
+        return ResponseEntity.badRequest().body(response);
+    }
+
     @ExceptionHandler(value = Exception.class)
-    ResponseEntity<ApiResponse> handleRuntimeException(RuntimeException e) {
+    ResponseEntity<ApiResponse> handleException(Exception e) {
         ApiResponse response = new ApiResponse();
         response.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
         response.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
