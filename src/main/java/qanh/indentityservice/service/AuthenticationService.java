@@ -11,10 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import qanh.indentityservice.dto.request.AuthenticationRequest;
 import qanh.indentityservice.dto.request.IntrospectRequest;
 import qanh.indentityservice.dto.response.AuthenticationResponse;
 import qanh.indentityservice.dto.response.IntrospectResponse;
+import qanh.indentityservice.entity.User;
 import qanh.indentityservice.exception.AppException;
 import qanh.indentityservice.exception.ErrorCode;
 import qanh.indentityservice.repository.UserRepository;
@@ -23,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Service
 @Slf4j
@@ -61,7 +64,7 @@ public class AuthenticationService {
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        var token = generateToken(authenticationRequest.getUsername());
+        var token = generateToken(user);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -69,15 +72,16 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(String username) {
+    private String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(user.getUsername())
                 .issuer("indentity-service")
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, java.time.temporal.ChronoUnit.HOURS).toEpochMilli()
                 ))
+                .claim("scope", buildScope(user))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
 
@@ -90,5 +94,13 @@ public class AuthenticationService {
             log.error("Error when generate token", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private String buildScope(User user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if (!CollectionUtils.isEmpty(user.getRoles())) {
+            user.getRoles().forEach(stringJoiner::add);
+        }
+        return stringJoiner.toString();
     }
 }

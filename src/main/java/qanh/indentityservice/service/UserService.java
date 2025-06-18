@@ -1,41 +1,53 @@
 package qanh.indentityservice.service;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import qanh.indentityservice.dto.request.UserCreationRequest;
 import qanh.indentityservice.dto.request.UserUpdateRequest;
 import qanh.indentityservice.dto.response.UserResponse;
 import qanh.indentityservice.entity.User;
+import qanh.indentityservice.enums.Role;
 import qanh.indentityservice.exception.AppException;
 import qanh.indentityservice.exception.ErrorCode;
 import qanh.indentityservice.mapper.UserMapper;
 import qanh.indentityservice.repository.UserRepository;
 
+import java.util.HashSet;
+import java.util.List;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public User createUser(UserCreationRequest userReq) {
+    public UserResponse createUser(UserCreationRequest userReq) {
 
         if (userRepository.existsByUsername(userReq.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTS);
 
         }
         User user = userMapper.toUser(userReq);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+
         user.setPassword(passwordEncoder.encode(userReq.getPassword()));
-        return userRepository.save(user);
+
+        HashSet<String> roles = new HashSet<>();
+        roles.add(Role.USER.name());
+        user.setRoles(roles);
+
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    public Iterable<User> getAllUser() {
-        return userRepository.findAll();
+    public List<UserResponse> getAllUser() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toUserResponse)
+                .toList();
     }
 
     public UserResponse getUserById(String id) {
