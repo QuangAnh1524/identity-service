@@ -16,6 +16,7 @@ import java.util.List;
 
 @RestController
 @Slf4j
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
@@ -23,14 +24,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/users")
+    @PostMapping()
     public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest user) {
         ApiResponse<UserResponse> response = new ApiResponse<>();
         response.setResult(userService.createUser(user));
         return response;
     }
 
-    @GetMapping("/users")
+    @GetMapping()
     public ApiResponse<List<UserResponse>> getAllUser() {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -44,17 +45,24 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public UserResponse getUserById(@PathVariable String id) {
         return userService.getUserById(id);
     }
 
-    @PutMapping("/users/{id}")
+    @PutMapping("/{id}")
     public UserResponse updateUser(@PathVariable String id, @RequestBody UserUpdateRequest user) {
         return userService.updateUser(id, user);
     }
 
-    @DeleteMapping("/users/{id}")
+    @GetMapping("/myInfo")
+    public ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
     }
