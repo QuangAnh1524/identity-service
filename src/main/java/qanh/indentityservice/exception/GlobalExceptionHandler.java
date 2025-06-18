@@ -1,6 +1,7 @@
 package qanh.indentityservice.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,12 +44,25 @@ public class GlobalExceptionHandler {
         }
 
     @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handleAppException(AppException e) {
+    ResponseEntity<ApiResponse> handleException(AppException e) {
+        ErrorCode errorCode = e.getErrorCode();
         ApiResponse response = new ApiResponse();
-        response.setCode(e.getErrorCode().getCode());
-        response.setMessage(e.getErrorCode().getMessage());
-        return ResponseEntity.badRequest().body(response);
+
+        response.setCode(errorCode.getCode());
+        response.setMessage(errorCode.getMessage());
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(response);
     }
 
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<ApiResponse> handlingAccessDeniedException(AccessDeniedException exception) {
+    ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+
+    return ResponseEntity.status(errorCode.getHttpStatusCode()).body(
+            ApiResponse.builder()
+                    .code(errorCode.getCode())
+                    .message(errorCode.getMessage())
+                    .build()
+    );
+    }
 
 }
